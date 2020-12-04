@@ -19,4 +19,4 @@ class StripeTest(TestCase):
             "card_cvc": 654,
         }, format='json')
              
-        print(request)
+        self.assertEqual(request.status_code, 200)
