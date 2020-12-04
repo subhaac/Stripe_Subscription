@@ -46,7 +46,7 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
         response = requests.post(url, headers=header, params=payload)
         print(response.text)
 
-        Payment_Method.objects.create(user=user_account, card_type=card_type, card_number=card_number, card_exp_month_year=card_exp_month_year, card_cvc=card_cvc )
+        Payment_Method.objects.create(user=user_account, card_type=card_type, card_number=card_number, card_exp_month_year=card_exp_month_year, card_cvc=card_cvc)
 
         return HttpResponse(response.text)
         
