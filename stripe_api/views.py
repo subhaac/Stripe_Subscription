@@ -11,6 +11,8 @@ from datetime import datetime
 # 1. For a POST request, you need to get the params, card details and user object from the request. 
 
 # 2. You need to make the request to stripe, save the details in your models and do something with the response from Stripe. 
+def index(request):
+    return HttpResponse("Welcome to Stripe Subscription API")
 
 class PaymentMethodViewSet(viewsets.ModelViewSet):
     queryset = Payment_Method.objects.all()
