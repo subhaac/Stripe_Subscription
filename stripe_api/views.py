@@ -19,11 +19,8 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentMethodSerializer
     
     def create(self, request):
-        user = self.request.data['user']
-        user_account = Customer.objects.get(id=user)
         card_type = self.request.data['card_type']
         card_number = self.request.data['card_number']
-        
         
         date_time_str = self.request.data['card_exp_month_year']
         
@@ -46,8 +43,8 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
         }
 
         response = requests.post(url, headers=header, params=payload)
-
-        Payment_Method.objects.create(user=user_account, card_type=card_type, card_number=card_number, card_exp_month_year=card_exp_month_year, card_cvc=card_cvc)
+        
+        Payment_Method.objects.create(card_type=card_type, card_number=card_number, card_exp_month_year=card_exp_month_year, card_cvc=card_cvc, stripe_payment_method_id=response.json()["id"])
 
         return HttpResponse(response.text)
         
@@ -57,7 +54,8 @@ class CustomerViewSet(viewsets.ModelViewSet):
     
     def create(self, request):
         customer_name = self.request.data['username']
-        
+        payment_method_id = self.request.data['payment_method']
+        payment_method = Payment_Method.objects.get(id=payment_method_id)
         url = "https://api.stripe.com/v1/customers"
         
         payload = {
@@ -69,8 +67,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
         }
 
         response = requests.post(url, headers=header, params=payload)
-
-        Customer.objects.create(username=customer_name)
+        Customer.objects.create(username=customer_name, stripe_customer_id=response.json()["id"], payment_method=payment_method)
 
         return HttpResponse(response.text)
        
