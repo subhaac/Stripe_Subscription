@@ -3,14 +3,10 @@ import requests
 from django.http import HttpResponse
 from django.conf import settings
 from rest_framework import viewsets
-from .models import Customer, Payment_Method
-from .serializers import PaymentMethodSerializer, CustomerSerializer
+from .models import Customer, Payment_Method, Subscription
+from .serializers import PaymentMethodSerializer, CustomerSerializer, SubscriptionSerializer
 from datetime import datetime
-# Bring in api view, define what to do with POST and GET 
 
-# 1. For a POST request, you need to get the params, card details and user object from the request. 
-
-# 2. You need to make the request to stripe, save the details in your models and do something with the response from Stripe. 
 def index(request):
     return HttpResponse("Welcome to Stripe Subscription API")
 
@@ -62,9 +58,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
         customer_name = self.request.data['username']
         payment_method_id = self.request.data['payment_method']
         payment_method = Payment_Method.objects.get(id=payment_method_id)
-        
         # Create Customer and set default payment method
-        
         payload = {
             "description": customer_name,
             "invoice_settings[default_payment_method]": payment_method.stripe_payment_method_id,
@@ -77,7 +71,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
         customer = Customer.objects.create(username=customer_name, stripe_customer_id=stripe_customer_id, payment_method=payment_method)
 
         # Attach payment method to customer for future recurring payments. 
-        # TODO: Change this to use SetupIntent as it's adviced in Stripe docs https://stripe.com/docs/api/setup_intents
+        # TODO: Change this to use SetupIntent as it's advised in Stripe docs https://stripe.com/docs/api/setup_intents
        
         attach_payment_method_url = "https://api.stripe.com/v1/payment_methods/" + str(payment_method.stripe_payment_method_id) + "/attach"
        
@@ -86,10 +80,30 @@ class CustomerViewSet(viewsets.ModelViewSet):
         }
 
         response = requests.post(attach_payment_method_url, headers=self.header, params=payload) 
-        
-
         return HttpResponse(response.text)
     
-   
+class SubscriptionViewSet(viewsets.ModelViewSet):
+    queryset = Subscription.objects.all()
+    serializer_class = SubscriptionSerializer 
     
- 
+    def create(self, request):
+        customer_id = self.request.data['customer']
+        customer = Customer.objects.get(id=customer_id)
+        url = "https://api.stripe.com/v1/subscriptions"
+        header = {
+                "Authorization": "Bearer " + settings.SECRET_KEY,
+                "Content-Type": "application/x-www-form-urlencoded",
+            }
+        payload = {
+            "customer" : customer.stripe_customer_id,
+            "items[0][price]" :"price_1Hvj0CG0xfgwLY2BpeU7unDf"
+        }
+        
+        response = requests.post(url, headers=header, params=payload)
+        subscription_id = response.json()["id"]
+        status = response.json()["status"]
+        purchase_date = datetime.fromtimestamp(response.json()["start_date"])
+        
+        Subscription.objects.create(status=status, purchase_date=purchase_date, stripe_subscription_id=subscription_id, customer=customer, price_id="price_1Hvj0CG0xfgwLY2BpeU7unDf")
+        
+        return HttpResponse(response.text)
