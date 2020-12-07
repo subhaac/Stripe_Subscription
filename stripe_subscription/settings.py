@@ -29,7 +29,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['stripe-sub.herokuapp.com']
 
 
 # Application definition
@@ -128,5 +128,6 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
-import django_heroku
-django_heroku.settings(locals())
+if 'HEROKU' in os.environ:
+    import django_heroku
+    django_heroku.settings(locals())
