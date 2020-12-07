@@ -3,8 +3,8 @@ import requests
 from django.http import HttpResponse
 from django.conf import settings
 from rest_framework import viewsets
-from .models import User_Account, Payment_Method
-from .serializers import PaymentMethodSerializer
+from .models import Customer, Payment_Method
+from .serializers import PaymentMethodSerializer, CustomerSerializer
 from datetime import datetime
 # Bring in api view, define what to do with POST and GET 
 
@@ -20,7 +20,7 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
     
     def create(self, request):
         user = self.request.data['user']
-        user_account = User_Account.objects.get(id=user)
+        user_account = Customer.objects.get(id=user)
         card_type = self.request.data['card_type']
         card_number = self.request.data['card_number']
         
@@ -46,12 +46,33 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
         }
 
         response = requests.post(url, headers=header, params=payload)
-        print(response.text)
 
         Payment_Method.objects.create(user=user_account, card_type=card_type, card_number=card_number, card_exp_month_year=card_exp_month_year, card_cvc=card_cvc)
 
         return HttpResponse(response.text)
         
+class CustomerViewSet(viewsets.ModelViewSet):
+    queryset = Customer.objects.all()
+    serializer_class = CustomerSerializer
+    
+    def create(self, request):
+        customer_name = self.request.data['username']
+        
+        url = "https://api.stripe.com/v1/customers"
+        
+        payload = {
+            "description": customer_name,
+        }
+        header = {
+            "Authorization": "Bearer " + settings.SECRET_KEY,
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+
+        response = requests.post(url, headers=header, params=payload)
+
+        Customer.objects.create(username=customer_name)
+
+        return HttpResponse(response.text)
        
    
     
