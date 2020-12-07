@@ -7,6 +7,7 @@ from . import views
 
 router = routers.DefaultRouter()
 router.register(r'paymentmethod', views.PaymentMethodViewSet)
+router.register(r'customer', views.CustomerViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
