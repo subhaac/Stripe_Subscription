@@ -19,11 +19,8 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentMethodSerializer
     
     def create(self, request):
-        user = self.request.data['user']
-        user_account = Customer.objects.get(id=user)
         card_type = self.request.data['card_type']
         card_number = self.request.data['card_number']
-        
         
         date_time_str = self.request.data['card_exp_month_year']
         
@@ -46,34 +43,53 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
         }
 
         response = requests.post(url, headers=header, params=payload)
-
-        Payment_Method.objects.create(user=user_account, card_type=card_type, card_number=card_number, card_exp_month_year=card_exp_month_year, card_cvc=card_cvc)
+        
+        Payment_Method.objects.create(card_type=card_type, card_number=card_number, card_exp_month_year=card_exp_month_year, card_cvc=card_cvc, stripe_payment_method_id=response.json()["id"])
 
         return HttpResponse(response.text)
+        
         
 class CustomerViewSet(viewsets.ModelViewSet):
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
-    
+    url = "https://api.stripe.com/v1/customers"
+    header = {
+        "Authorization": "Bearer " + settings.SECRET_KEY,
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+
     def create(self, request):
         customer_name = self.request.data['username']
+        payment_method_id = self.request.data['payment_method']
+        payment_method = Payment_Method.objects.get(id=payment_method_id)
         
-        url = "https://api.stripe.com/v1/customers"
+        # Create Customer and set default payment method
         
         payload = {
             "description": customer_name,
+            "invoice_settings[default_payment_method]": payment_method.stripe_payment_method_id,
+            "payment_method": payment_method.stripe_payment_method_id
         }
-        header = {
-            "Authorization": "Bearer " + settings.SECRET_KEY,
-            "Content-Type": "application/x-www-form-urlencoded",
+       
+        response = requests.post(self.url, headers=self.header, params=payload)
+        stripe_customer_id = response.json()["id"]
+        
+        customer = Customer.objects.create(username=customer_name, stripe_customer_id=stripe_customer_id, payment_method=payment_method)
+
+        # Attach payment method to customer for future recurring payments. 
+        # TODO: Change this to use SetupIntent as it's adviced in Stripe docs https://stripe.com/docs/api/setup_intents
+       
+        attach_payment_method_url = "https://api.stripe.com/v1/payment_methods/" + str(payment_method.stripe_payment_method_id) + "/attach"
+       
+        payload = {
+            "customer": customer.stripe_customer_id,
         }
 
-        response = requests.post(url, headers=header, params=payload)
-
-        Customer.objects.create(username=customer_name)
+        response = requests.post(attach_payment_method_url, headers=self.header, params=payload) 
+        
 
         return HttpResponse(response.text)
-       
+    
    
     
  
