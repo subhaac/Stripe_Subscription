@@ -29,7 +29,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['stripe-sub.herokuapp.com']
+ALLOWED_HOSTS = ['stripe-sub.herokuapp.com', 'localhost']
 
 
 # Application definition
