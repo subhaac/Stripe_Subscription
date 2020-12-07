@@ -8,6 +8,7 @@ class StripeTest(TestCase):
     def setUp(self):
         self.factory = APIClient()
         self.payment_method_1 = Payment_Method.objects.create(card_type="card", card_number=4242424242424242, card_exp_month_year="2021-02-02", card_cvc=789)
+        self.user_test_1 = Customer.create(username="test_user_1_test", payment_method=self.payment_method_1.id)
     
     def test_create_payment_method(self):
         request = self.factory.post('/stripe_api/paymentmethod/', {
@@ -26,3 +27,4 @@ class StripeTest(TestCase):
         },format='json')
         
         self.assertEqual(request.status_code, 200)
+        
