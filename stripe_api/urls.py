@@ -8,6 +8,7 @@ from . import views
 router = routers.DefaultRouter()
 router.register(r'paymentmethod', views.PaymentMethodViewSet)
 router.register(r'customer', views.CustomerViewSet)
+router.register(r'subscription', views.SubscriptionViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
