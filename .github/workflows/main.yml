@@ -15,7 +15,4 @@ jobs:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: "stripe-sub" #Must be unique in Heroku
           heroku_email: "subhaac@yahoo.co.uk"
-      - name: Run migrations
-        run: python manage.py migrate
-        env:
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+ 
