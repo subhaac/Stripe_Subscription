@@ -15,12 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.conf import urls 
-import stripe_api 
+from django.conf import urls
+import stripe_api
 from stripe_api import views
 
 urlpatterns = [
-    path('', views.index, name="main_page"),
-    path('admin/', admin.site.urls),
-    path('stripe_api/', include('stripe_api.urls')),
+    path("", views.index, name="main_page"),
+    path("admin/", admin.site.urls),
+    path("stripe_api/", include("stripe_api.urls")),
 ]

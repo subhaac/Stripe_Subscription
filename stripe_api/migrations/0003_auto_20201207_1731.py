@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('stripe_api', '0002_auto_20201207_1711'),
+        ("stripe_api", "0002_auto_20201207_1711"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='subscription',
-            name='price_id',
+            model_name="subscription",
+            name="price_id",
             field=models.CharField(max_length=50),
         ),
     ]

@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class StripeApiConfig(AppConfig):
-    name = 'stripe_api'
+    name = "stripe_api"
