@@ -81,8 +81,12 @@ WSGI_APPLICATION = 'stripe_subscription.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'stripe',
+        'USER': 'test_user_stripe',
+        'PASSWORD': 'km010a027',
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }
 
