@@ -23,6 +23,9 @@ environ.Env.read_env()
 # Raises django's ImproperlyConfigured exception if SECRET_KEY not in os.environ
 SECRET_KEY = env('SECRET_KEY')
 
+import dj_database_url
+DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
@@ -82,11 +85,11 @@ WSGI_APPLICATION = 'stripe_subscription.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'stripe',
-        'USER': 'test_user_stripe',
-        'PASSWORD': 'km010a027',
-        'HOST': 'localhost',
-        'PORT': '',
+        'NAME': 'd82lh5inrbagfg',
+        'USER': 'wwdusabknjqxdc',
+        'PASSWORD': '7d6abf74dbf03aeb3ed31006d960b4d018ff1c6d61de8b2214699da4075f9c00',
+        'HOST': 'ec2-52-208-138-246.eu-west-1.compute.amazonaws.com',
+        'PORT': '5432',
     }
 }
 
