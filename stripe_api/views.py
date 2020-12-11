@@ -41,6 +41,15 @@ def my_webhook_view(request):
     elif event.type == 'customer.subscription.created':
         payment_method = event.data.object 
         print(payment_method)
+        print(datetime.fromtimestamp(payment_method['current_period_start']))
+        print(datetime.fromtimestamp(payment_method['current_period_end']))
+        print(payment_method["items"]["data"][0]["plan"]["active"])
+        print(payment_method['customer'])
+        # Get customer in local db, change subscription status to active 
+        customer = Customer.objects.get(stripe_customer_id=payment_method['customer'])
+        print(customer.username)
+        customer.status = "Active"
+        customer.save()
         
     else:
         print('Unhandled event type {}'.format(event.type))
