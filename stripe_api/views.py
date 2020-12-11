@@ -39,7 +39,7 @@ def my_webhook_view(request):
     # handle_payment_method_attached(payment_method)
     # ... handle other event types
     elif event.type == 'customer.subscription.created':
-        payment_method = event.date.object 
+        payment_method = event.data.object 
         print(payment_method)
         
     else:
