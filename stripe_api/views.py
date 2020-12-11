@@ -38,6 +38,10 @@ def my_webhook_view(request):
     # Then define and call a method to handle the successful attachment of a PaymentMethod.
     # handle_payment_method_attached(payment_method)
     # ... handle other event types
+    elif event.type == 'customer.subscription.created':
+        payment_method = event.date.object 
+        print(payment_method)
+        
     else:
         print('Unhandled event type {}'.format(event.type))
 
@@ -86,7 +90,7 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
             stripe_payment_method_id=response.json()["id"],
         )
 
-        return HttpResponse(response.text)
+        return HttpResponse("Payment method created!")
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -134,7 +138,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
         response = requests.post(
             attach_payment_method_url, headers=self.header, params=payload
         )
-        return HttpResponse(response.text)
+        return HttpResponse("Customer created!")
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
@@ -167,4 +171,4 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             price_id="price_1Hvj0CG0xfgwLY2BpeU7unDf",
         )
 
-        return HttpResponse(response.text)
+        return HttpResponse("Subscription created!")
