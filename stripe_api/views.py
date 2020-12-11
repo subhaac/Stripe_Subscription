@@ -29,31 +29,19 @@ def my_webhook_view(request):
         return HttpResponse(status=400)
 
     # Handle the event
-    if event.type == 'payment_intent.succeeded':
-        payment_intent = event.data.object # contains a stripe.PaymentIntent
-    # Then define and call a method to handle the successful payment intent.
-    # handle_payment_intent_succeeded(payment_intent)
-    elif event.type == 'payment_method.attached':
-        payment_method = event.data.object # contains a stripe.PaymentMethod
-    # Then define and call a method to handle the successful attachment of a PaymentMethod.
-    # handle_payment_method_attached(payment_method)
-    # ... handle other event types
-    elif event.type == 'customer.subscription.created':
+    if event.type == 'customer.subscription.created':
         payment_method = event.data.object 
-        print(payment_method)
-        print(datetime.fromtimestamp(payment_method['current_period_start']))
-        print(datetime.fromtimestamp(payment_method['current_period_end']))
-        print(payment_method["items"]["data"][0]["plan"]["active"])
-        print(payment_method['customer'])
+        subscription_status = payment_method["items"]["data"][0]["plan"]["active"]
         # Get customer in local db, change subscription status to active 
         customer = Customer.objects.get(stripe_customer_id=payment_method['customer'])
         print(customer.username)
-        customer.status = "Active"
+        if subscription_status == True:
+            customer.status = "Active"
+        elif subscription_status == False:
+            customer.status = "Inactive"
         customer.save()
-        
     else:
         print('Unhandled event type {}'.format(event.type))
-
     return HttpResponse(status=200)
 
 
