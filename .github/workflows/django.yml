@@ -15,10 +15,10 @@ jobs:
         python -m pip install pipenv 
         pipenv install
     - name: Run migrations
-      run: pipenv run python manage.py migrate
+      run: pipenv run python manage.py migrate --settings=settings_local
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
     - name: Run tests
-      run: pipenv run python manage.py test
+      run: pipenv run python manage.py test --settings=settings_local
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
