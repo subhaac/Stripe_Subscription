@@ -11,7 +11,7 @@ class PaymentMethodSerializer(serializers.ModelSerializer):
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = ("username", "stripe_customer_id", "payment_method")
+        fields = ("username", "payment_method")
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
