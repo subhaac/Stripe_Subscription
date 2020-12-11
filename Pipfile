@@ -39,6 +39,8 @@ virtualenv = "==20.2.1"
 virtualenv-clone = "==0.5.4"
 whitenoise = "==5.2.0"
 Django = "==3.1.4"
+pycodestyle = "==2.6.0"
+stripe = "==2.55.1"
 
 [dev-packages]
 
