@@ -96,9 +96,9 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
                 stripe_payment_method_id=stripe_id,
             )
 
-            return HttpResponse("Success!")
+            return HttpResponse("Success!", status=200)
         else:
-            return HttpResponse("Unauthorized!")
+            return HttpResponse("Unauthorized!", status=401)
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -150,9 +150,9 @@ class CustomerViewSet(viewsets.ModelViewSet):
             response = requests.post(
                 attach_payment_method_url, headers=self.header, params=payload
             )
-            return HttpResponse("Success!")
+            return HttpResponse("Success!", status=200)
         else:
-            return HttpResponse("Unauthorized!")
+            return HttpResponse("Unauthorized!", status=401)
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
@@ -187,6 +187,6 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
                 price_id="price_1Hvj0CG0xfgwLY2BpeU7unDf",
             )
 
-            return HttpResponse("Success!")
+            return HttpResponse("Success!", status=200)
         else:
-            return HttpResponse("Unauthorized!")
+            return HttpResponse("Unauthorized!", status=401)
