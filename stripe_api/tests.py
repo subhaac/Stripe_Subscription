@@ -31,6 +31,7 @@ class StripeTest(TestCase):
                     "card_number": 4242424242424242,
                     "card_exp_month_year": "2061-10-06",
                     "card_cvc": 189,
+                    "key": "test_key",
                 },
                 format="json",
             )
@@ -60,6 +61,7 @@ class StripeTest(TestCase):
                     "card_number": 4242424242424242,
                     "card_exp_month_year": "2061-10-06",
                     "card_cvc": 256,
+                    "key": "test_key",
                 },
                 format="json",
             )
@@ -83,6 +85,7 @@ class StripeTest(TestCase):
                 {
                     "username": "test_create_customer",
                     "payment_method": payment_method.id,
+                    "key": "test_key",
                 },
                 format="json",
             )
@@ -109,6 +112,7 @@ class StripeTest(TestCase):
                     "card_number": 4242424242424242,
                     "card_exp_month_year": "2021-02-02",
                     "card_cvc": 789,
+                    "key": "test_key",
                 },
                 format="json",
             )
@@ -129,7 +133,11 @@ class StripeTest(TestCase):
 
             request = self.factory.post(
                 "/stripe_api/customer/",
-                {"username": "test_user_2", "payment_method": payment_method.id},
+                {
+                    "username": "test_user_2",
+                    "payment_method": payment_method.id,
+                    "key": "test_key",
+                },
                 format="json",
             )
 
@@ -152,6 +160,7 @@ class StripeTest(TestCase):
                 "/stripe_api/subscription/",
                 {
                     "customer": user.id,
+                    "key": "test_key",
                 },
                 format="json",
             )
@@ -178,6 +187,7 @@ class StripeTest(TestCase):
                     "card_number": 4242424242424242,
                     "card_exp_month_year": "2021-02-02",
                     "card_cvc": 789,
+                    "key": "test_key",
                 },
                 format="json",
             )
@@ -198,7 +208,11 @@ class StripeTest(TestCase):
 
             request = self.factory.post(
                 "/stripe_api/customer/",
-                {"username": "test_user_2", "payment_method": payment_method.id},
+                {
+                    "username": "test_user_2",
+                    "payment_method": payment_method.id,
+                    "key": "test_key",
+                },
                 format="json",
             )
 

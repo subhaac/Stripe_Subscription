@@ -12,7 +12,8 @@ from .serializers import (
 from datetime import datetime
 import json
 from django.views.decorators.csrf import csrf_exempt
-import stripe 
+import stripe
+
 
 @csrf_exempt
 def my_webhook_view(request):
@@ -20,35 +21,33 @@ def my_webhook_view(request):
     event = None
 
     try:
-        event = stripe.Event.construct_from(
-            json.loads(payload), stripe.api_key
-        )
+        event = stripe.Event.construct_from(json.loads(payload), stripe.api_key)
     except ValueError as e:
-    # Invalid payload
+        # Invalid payload
         return HttpResponse(status=400)
     # Handle the event
-    if event.type == 'customer.subscription.created':
-        payment_method = event.data.object 
+    if event.type == "customer.subscription.created":
+        payment_method = event.data.object
         subscription_status = payment_method["items"]["data"][0]["plan"]["active"]
-        # Get customer in local db, change subscription status to active 
-        customer = Customer.objects.get(stripe_customer_id=payment_method['customer'])
+        # Get customer in local db, change subscription status to active
+        customer = Customer.objects.get(stripe_customer_id=payment_method["customer"])
         if subscription_status == True:
             customer.status = "Active"
         elif subscription_status == False:
             customer.status = "Inactive"
         customer.save()
-    elif event.type == 'customer.subscription.updated':
-        payment_method = event.data.object 
+    elif event.type == "customer.subscription.updated":
+        payment_method = event.data.object
         subscription_status = payment_method["items"]["data"][0]["plan"]["active"]
-        # Get customer in local db, change subscription status to active 
-        customer = Customer.objects.get(stripe_customer_id=payment_method['customer'])
+        # Get customer in local db, change subscription status to active
+        customer = Customer.objects.get(stripe_customer_id=payment_method["customer"])
         if subscription_status == True:
             customer.status = "Active"
         elif subscription_status == False:
             customer.status = "Inactive"
         customer.save()
     else:
-        print('Unhandled event type {}'.format(event.type))
+        print("Unhandled event type {}".format(event.type))
     return HttpResponse(status=200)
 
 
@@ -64,7 +63,7 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
         card_type = self.request.data["card_type"]
         card_number = self.request.data["card_number"]
         key = self.request.data["key"]
-        
+
         if key == settings.ACCESS_KEY:
             date_time_str = self.request.data["card_exp_month_year"]
 
@@ -98,10 +97,8 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
             )
 
             return HttpResponse("Payment method created!")
-        else: 
+        else:
             return HttpResponse("Unauthorized")
-         
-        
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -116,9 +113,9 @@ class CustomerViewSet(viewsets.ModelViewSet):
     def create(self, request):
         customer_name = self.request.data["username"]
         payment_method_id = self.request.data["payment_method"]
-        
+
         key = self.request.data["key"]
-        
+
         if key == settings.ACCESS_KEY:
             payment_method = Payment_Method.objects.get(id=payment_method_id)
             # Create Customer and set default payment method
@@ -158,7 +155,6 @@ class CustomerViewSet(viewsets.ModelViewSet):
             return HttpResponse("Unauthorized")
 
 
-
 class SubscriptionViewSet(viewsets.ModelViewSet):
     queryset = Subscription.objects.all()
     serializer_class = SubscriptionSerializer
@@ -166,7 +162,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
     def create(self, request):
         customer_id = self.request.data["customer"]
         key = self.request.data["key"]
-        
+
         if key == settings.ACCESS_KEY:
             customer = Customer.objects.get(id=customer_id)
             url = "https://api.stripe.com/v1/subscriptions"
@@ -192,5 +188,5 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             )
 
             return HttpResponse("Subscription created!")
-        else: 
+        else:
             return HttpResponse("Unauthorized")

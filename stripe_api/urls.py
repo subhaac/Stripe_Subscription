@@ -13,5 +13,5 @@ router.register(r"subscription", views.SubscriptionViewSet)
 urlpatterns = [
     path("", include(router.urls)),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
-    path('hook/', views.my_webhook_view, name="webhook")
+    path("hook/", views.my_webhook_view, name="webhook"),
 ]

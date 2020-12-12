@@ -7,20 +7,20 @@ import fernet_fields.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('stripe_api', '0004_customer_key'),
+        ("stripe_api", "0004_customer_key"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='payment_method',
-            name='key',
-            field=fernet_fields.fields.EncryptedTextField(default='null'),
+            model_name="payment_method",
+            name="key",
+            field=fernet_fields.fields.EncryptedTextField(default="null"),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='subscription',
-            name='key',
-            field=fernet_fields.fields.EncryptedTextField(default='null'),
+            model_name="subscription",
+            name="key",
+            field=fernet_fields.fields.EncryptedTextField(default="null"),
             preserve_default=False,
         ),
     ]
