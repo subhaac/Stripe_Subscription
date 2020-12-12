@@ -9,7 +9,7 @@ import requests
 from django.urls import reverse
 from requests.models import Response
 import stripe
-
+from django.conf import settings
 
 class StripeTest(TestCase):
     def setUp(self):
@@ -31,7 +31,7 @@ class StripeTest(TestCase):
                     "card_number": 4242424242424242,
                     "card_exp_month_year": "2061-10-06",
                     "card_cvc": 189,
-                    "key": "test_key",
+                    "key": settings.ACCESS_KEY,
                 },
                 format="json",
             )
@@ -61,7 +61,7 @@ class StripeTest(TestCase):
                     "card_number": 4242424242424242,
                     "card_exp_month_year": "2061-10-06",
                     "card_cvc": 256,
-                    "key": "test_key",
+                    "key": settings.ACCESS_KEY,
                 },
                 format="json",
             )
@@ -85,7 +85,7 @@ class StripeTest(TestCase):
                 {
                     "username": "test_create_customer",
                     "payment_method": payment_method.id,
-                    "key": "test_key",
+                    "key": settings.ACCESS_KEY,
                 },
                 format="json",
             )
@@ -112,7 +112,7 @@ class StripeTest(TestCase):
                     "card_number": 4242424242424242,
                     "card_exp_month_year": "2021-02-02",
                     "card_cvc": 789,
-                    "key": "test_key",
+                    "key": settings.ACCESS_KEY,
                 },
                 format="json",
             )
@@ -136,7 +136,7 @@ class StripeTest(TestCase):
                 {
                     "username": "test_user_2",
                     "payment_method": payment_method.id,
-                    "key": "test_key",
+                    "key": settings.ACCESS_KEY,
                 },
                 format="json",
             )
@@ -160,7 +160,7 @@ class StripeTest(TestCase):
                 "/stripe_api/subscription/",
                 {
                     "customer": user.id,
-                    "key": "test_key",
+                    "key": settings.ACCESS_KEY,
                 },
                 format="json",
             )
@@ -185,7 +185,7 @@ class StripeTest(TestCase):
                     "card_number": 4242424242424242,
                     "card_exp_month_year": "2021-02-02",
                     "card_cvc": 789,
-                    "key": "test_key",
+                    "key": settings.ACCESS_KEY,
                 },
                 format="json",
             )
@@ -209,7 +209,7 @@ class StripeTest(TestCase):
                 {
                     "username": "test_user_2",
                     "payment_method": payment_method.id,
-                    "key": "test_key",
+                    "key": settings.ACCESS_KEY,
                 },
                 format="json",
             )
