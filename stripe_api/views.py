@@ -16,7 +16,6 @@ import stripe
 
 @csrf_exempt
 def my_webhook_view(request):
-    print("Webhook routed")
     payload = request.body
     event = None
 
@@ -27,14 +26,22 @@ def my_webhook_view(request):
     except ValueError as e:
     # Invalid payload
         return HttpResponse(status=400)
-
     # Handle the event
     if event.type == 'customer.subscription.created':
         payment_method = event.data.object 
         subscription_status = payment_method["items"]["data"][0]["plan"]["active"]
         # Get customer in local db, change subscription status to active 
         customer = Customer.objects.get(stripe_customer_id=payment_method['customer'])
-        print(customer.username)
+        if subscription_status == True:
+            customer.status = "Active"
+        elif subscription_status == False:
+            customer.status = "Inactive"
+        customer.save()
+    elif event.type == 'customer.subscription.updated':
+        payment_method = event.data.object 
+        subscription_status = payment_method["items"]["data"][0]["plan"]["active"]
+        # Get customer in local db, change subscription status to active 
+        customer = Customer.objects.get(stripe_customer_id=payment_method['customer'])
         if subscription_status == True:
             customer.status = "Active"
         elif subscription_status == False:
@@ -78,13 +85,14 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
         }
 
         response = requests.post(url, headers=header, params=payload)
+        stripe_id = response.json()["id"]
 
         Payment_Method.objects.create(
             card_type=card_type,
             card_number=card_number,
             card_exp_month_year=card_exp_month_year,
             card_cvc=card_cvc,
-            stripe_payment_method_id=response.json()["id"],
+            stripe_payment_method_id=stripe_id,
         )
 
         return HttpResponse("Payment method created!")
@@ -157,11 +165,10 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 
         response = requests.post(url, headers=header, params=payload)
         subscription_id = response.json()["id"]
-        status = response.json()["status"]
         purchase_date = datetime.fromtimestamp(response.json()["start_date"])
 
         Subscription.objects.create(
-            status=status,
+            status="Pending",
             purchase_date=purchase_date,
             stripe_subscription_id=subscription_id,
             customer=customer,
