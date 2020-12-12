@@ -30,7 +30,7 @@ ACCESS_KEY = env("ACCESS_KEY")
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["stripe-sub.herokuapp.com"]
 
