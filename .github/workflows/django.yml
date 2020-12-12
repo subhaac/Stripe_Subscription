@@ -18,7 +18,10 @@ jobs:
       run: pipenv run python manage.py migrate --settings=settings_local
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
+
     - name: Run tests
       run: pipenv run python manage.py test --settings=settings_local
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
