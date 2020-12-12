@@ -24,6 +24,7 @@ environ.Env.read_env()
 
 # Raises django's ImproperlyConfigured exception if SECRET_KEY not in os.environ
 SECRET_KEY = env("SECRET_KEY")
+ACCESS_KEY = env("ACCESS_KEY")
 
 
 # Quick-start development settings - unsuitable for production

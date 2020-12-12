@@ -63,39 +63,45 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
     def create(self, request):
         card_type = self.request.data["card_type"]
         card_number = self.request.data["card_number"]
+        key = self.request.data["key"]
+        
+        if key == settings.ACCESS_KEY:
+            date_time_str = self.request.data["card_exp_month_year"]
 
-        date_time_str = self.request.data["card_exp_month_year"]
+            card_exp_month_year = datetime.strptime(date_time_str, "%Y-%m-%d")
 
-        card_exp_month_year = datetime.strptime(date_time_str, "%Y-%m-%d")
+            card_cvc = self.request.data["card_cvc"]
 
-        card_cvc = self.request.data["card_cvc"]
+            url = "https://api.stripe.com/v1/payment_methods"
 
-        url = "https://api.stripe.com/v1/payment_methods"
+            payload = {
+                "type": card_type,
+                "card[number]": card_number,
+                "card[exp_month]": card_exp_month_year.month,
+                "card[exp_year]": card_exp_month_year.year,
+                "card[cvc]": card_cvc,
+            }
+            header = {
+                "Authorization": "Bearer " + settings.SECRET_KEY,
+                "Content-Type": "application/x-www-form-urlencoded",
+            }
 
-        payload = {
-            "type": card_type,
-            "card[number]": card_number,
-            "card[exp_month]": card_exp_month_year.month,
-            "card[exp_year]": card_exp_month_year.year,
-            "card[cvc]": card_cvc,
-        }
-        header = {
-            "Authorization": "Bearer " + settings.SECRET_KEY,
-            "Content-Type": "application/x-www-form-urlencoded",
-        }
+            response = requests.post(url, headers=header, params=payload)
+            stripe_id = response.json()["id"]
 
-        response = requests.post(url, headers=header, params=payload)
-        stripe_id = response.json()["id"]
+            Payment_Method.objects.create(
+                card_type=card_type,
+                card_number=card_number,
+                card_exp_month_year=card_exp_month_year,
+                card_cvc=card_cvc,
+                stripe_payment_method_id=stripe_id,
+            )
 
-        Payment_Method.objects.create(
-            card_type=card_type,
-            card_number=card_number,
-            card_exp_month_year=card_exp_month_year,
-            card_cvc=card_cvc,
-            stripe_payment_method_id=stripe_id,
-        )
-
-        return HttpResponse("Payment method created!")
+            return HttpResponse("Payment method created!")
+        else: 
+            return HttpResponse("Unauthorized")
+         
+        
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -110,40 +116,47 @@ class CustomerViewSet(viewsets.ModelViewSet):
     def create(self, request):
         customer_name = self.request.data["username"]
         payment_method_id = self.request.data["payment_method"]
-        payment_method = Payment_Method.objects.get(id=payment_method_id)
-        # Create Customer and set default payment method
-        payload = {
-            "description": customer_name,
-            "invoice_settings[default_payment_method]": payment_method.stripe_payment_method_id,
-            "payment_method": payment_method.stripe_payment_method_id,
-        }
+        
+        key = self.request.data["key"]
+        
+        if key == settings.ACCESS_KEY:
+            payment_method = Payment_Method.objects.get(id=payment_method_id)
+            # Create Customer and set default payment method
+            payload = {
+                "description": customer_name,
+                "invoice_settings[default_payment_method]": payment_method.stripe_payment_method_id,
+                "payment_method": payment_method.stripe_payment_method_id,
+            }
 
-        response = requests.post(self.url, headers=self.header, params=payload)
-        stripe_customer_id = response.json()["id"]
+            response = requests.post(self.url, headers=self.header, params=payload)
+            stripe_customer_id = response.json()["id"]
 
-        customer = Customer.objects.create(
-            username=customer_name,
-            stripe_customer_id=stripe_customer_id,
-            payment_method=payment_method,
-        )
+            customer = Customer.objects.create(
+                username=customer_name,
+                stripe_customer_id=stripe_customer_id,
+                payment_method=payment_method,
+            )
 
-        # Attach payment method to customer for future recurring payments.
-        # TODO: Change this to use SetupIntent as it's advised in Stripe docs https://stripe.com/docs/api/setup_intents
+            # Attach payment method to customer for future recurring payments.
+            # TODO: Change this to use SetupIntent as it's advised in Stripe docs https://stripe.com/docs/api/setup_intents
 
-        attach_payment_method_url = (
-            "https://api.stripe.com/v1/payment_methods/"
-            + str(payment_method.stripe_payment_method_id)
-            + "/attach"
-        )
+            attach_payment_method_url = (
+                "https://api.stripe.com/v1/payment_methods/"
+                + str(payment_method.stripe_payment_method_id)
+                + "/attach"
+            )
 
-        payload = {
-            "customer": customer.stripe_customer_id,
-        }
+            payload = {
+                "customer": customer.stripe_customer_id,
+            }
 
-        response = requests.post(
-            attach_payment_method_url, headers=self.header, params=payload
-        )
-        return HttpResponse("Customer created!")
+            response = requests.post(
+                attach_payment_method_url, headers=self.header, params=payload
+            )
+            return HttpResponse("Customer created!")
+        else:
+            return HttpResponse("Unauthorized")
+
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
@@ -152,27 +165,32 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         customer_id = self.request.data["customer"]
-        customer = Customer.objects.get(id=customer_id)
-        url = "https://api.stripe.com/v1/subscriptions"
-        header = {
-            "Authorization": "Bearer " + settings.SECRET_KEY,
-            "Content-Type": "application/x-www-form-urlencoded",
-        }
-        payload = {
-            "customer": customer.stripe_customer_id,
-            "items[0][price]": "price_1Hvj0CG0xfgwLY2BpeU7unDf",
-        }
+        key = self.request.data["key"]
+        
+        if key == settings.ACCESS_KEY:
+            customer = Customer.objects.get(id=customer_id)
+            url = "https://api.stripe.com/v1/subscriptions"
+            header = {
+                "Authorization": "Bearer " + settings.SECRET_KEY,
+                "Content-Type": "application/x-www-form-urlencoded",
+            }
+            payload = {
+                "customer": customer.stripe_customer_id,
+                "items[0][price]": "price_1Hvj0CG0xfgwLY2BpeU7unDf",
+            }
 
-        response = requests.post(url, headers=header, params=payload)
-        subscription_id = response.json()["id"]
-        purchase_date = datetime.fromtimestamp(response.json()["start_date"])
+            response = requests.post(url, headers=header, params=payload)
+            subscription_id = response.json()["id"]
+            purchase_date = datetime.fromtimestamp(response.json()["start_date"])
 
-        Subscription.objects.create(
-            status="Pending",
-            purchase_date=purchase_date,
-            stripe_subscription_id=subscription_id,
-            customer=customer,
-            price_id="price_1Hvj0CG0xfgwLY2BpeU7unDf",
-        )
+            Subscription.objects.create(
+                status="Pending",
+                purchase_date=purchase_date,
+                stripe_subscription_id=subscription_id,
+                customer=customer,
+                price_id="price_1Hvj0CG0xfgwLY2BpeU7unDf",
+            )
 
-        return HttpResponse("Subscription created!")
+            return HttpResponse("Subscription created!")
+        else: 
+            return HttpResponse("Unauthorized")
