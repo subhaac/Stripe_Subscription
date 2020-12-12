@@ -11,14 +11,14 @@
    c) Activate virtual environment - ***pyenv local test_environment***  (you will see (test_environment) on the beginning of each line on your terminal)
    
 4. Install pipenv using ***pip install pipenv***.
-5. Install dependencies ***using pipenv install***.
+5. Install dependencies using ***pipenv install***.
 6. Create an empty file in _Stripe_Subscriptions/_ (should be the directory you are in currently) called .env and insert the following lines in the file and save:
    ```
    SECRET_KEY=(stripe_secret_key refer to email)
    ACCESS_KEY=(can be any string eg: test_access_key)
     ```
-7. Migrate by using the command _python manage.py migrate --settings=settings_local_
-8. Run the server using _python manage.py runserver --settings=settings_local_.
+7. Migrate by using the command ***python manage.py migrate --settings=settings_local***.
+8. Run the server using ***python manage.py runserver --settings=settings_local***.
 9. Navigate to http://localhost:8000/stripe_api/ on your browser. You can see the browsable API views here for payment method, customer and subscription. You can navigate to the links for each and add a payment method, customer or subscription from here. 
 
 Example payload for payment method:
