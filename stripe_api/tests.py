@@ -37,7 +37,7 @@ class StripeTest(TestCase):
                 format="json",
             )
             self.assertEqual(request.status_code, 200)
-            self.assertEqual(request._container[0], b"Payment method created!")
+            self.assertEqual(request._container[0], b"Success!")
 
             payment_method = Payment_Method.objects.get(card_cvc=189)
             self.assertEqual(
@@ -67,7 +67,7 @@ class StripeTest(TestCase):
                 format="json",
             )
             self.assertEqual(request.status_code, 200)
-            self.assertEqual(request._container[0], b"Payment method created!")
+            self.assertEqual(request._container[0], b"Success!")
 
             payment_method = Payment_Method.objects.get(card_cvc=256)
             self.assertEqual(
@@ -91,7 +91,7 @@ class StripeTest(TestCase):
                 format="json",
             )
             self.assertEqual(request.status_code, 200)
-            self.assertEqual(request._container[0], b"Customer created!")
+            self.assertEqual(request._container[0], b"Success!")
 
             customer = Customer.objects.get(username="test_create_customer")
             self.assertEqual(customer.stripe_customer_id, "test_customer_1")
@@ -119,7 +119,7 @@ class StripeTest(TestCase):
             )
             payment_method = Payment_Method.objects.get(card_cvc=789)
             self.assertEqual(request.status_code, 200)
-            self.assertEqual(request._container[0], b"Payment method created!")
+            self.assertEqual(request._container[0], b"Success!")
 
             self.assertEqual(
                 payment_method.stripe_payment_method_id, "test_payment_method_3"
@@ -143,7 +143,7 @@ class StripeTest(TestCase):
             )
 
             self.assertEqual(request.status_code, 200)
-            self.assertEqual(request._container[0], b"Customer created!")
+            self.assertEqual(request._container[0], b"Success!")
 
             user = Customer.objects.get(username="test_user_2")
             self.assertEqual(user.stripe_customer_id, "test_customer_2")
@@ -167,9 +167,7 @@ class StripeTest(TestCase):
             )
 
             self.assertEqual(request_to_create_subscription.status_code, 200)
-            self.assertEqual(
-                request_to_create_subscription._container[0], b"Subscription created!"
-            )
+            self.assertEqual(request_to_create_subscription._container[0], b"Success!")
 
             subscription = Subscription.objects.get(customer=user)
             self.assertEqual(subscription.customer.id, user.id)
@@ -194,7 +192,7 @@ class StripeTest(TestCase):
             )
             payment_method = Payment_Method.objects.get(card_cvc=789)
             self.assertEqual(request.status_code, 200)
-            self.assertEqual(request._container[0], b"Payment method created!")
+            self.assertEqual(request._container[0], b"Success!")
 
             self.assertEqual(
                 payment_method.stripe_payment_method_id, "test_payment_method_3"
@@ -218,7 +216,7 @@ class StripeTest(TestCase):
             )
 
             self.assertEqual(request.status_code, 200)
-            self.assertEqual(request._container[0], b"Customer created!")
+            self.assertEqual(request._container[0], b"Success!")
 
             user = Customer.objects.get(username="test_user_2")
             self.assertEqual(user.stripe_customer_id, "test_customer_4")

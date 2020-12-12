@@ -48,7 +48,7 @@ def my_webhook_view(request):
         customer.save()
     else:
         print("Unhandled event type {}".format(event.type))
-    return HttpResponse(status_code=200)
+    return HttpResponse(status=200)
 
 
 def index(request):
