@@ -34,10 +34,6 @@ Parameters:
     card_exp_month_year (str): payment card expiry month and year in the format mm/yyyy
     card_cvc (int): payment card cvc number
     key (str): access key 
-
-Sample request: 
-
-      POST /stripe_api/paymentmethod/
    
 Sample payload:
 
@@ -69,10 +65,6 @@ Parameters:
     payment_method (int): id of a previously added payment method
     key (str): access key 
 
-Sample request:
-
-      POST /stripe_api/customer/
-
 Sample payload:
 
       {
@@ -97,10 +89,6 @@ Parameters:
 
     customer (int): id of a previously added customer 
     key (str): access key
-
-Sample request:
-
-      POST /stripe_api/subscription/
 
 Sample payload:
 
