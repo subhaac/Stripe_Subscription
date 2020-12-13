@@ -13,7 +13,7 @@ from datetime import datetime
 import json
 from django.views.decorators.csrf import csrf_exempt
 import stripe
-
+from rest_framework.response import Response
 
 @csrf_exempt
 def my_webhook_view(request):
@@ -24,7 +24,7 @@ def my_webhook_view(request):
         event = stripe.Event.construct_from(json.loads(payload), stripe.api_key)
     except ValueError as e:
         # Invalid payload
-        return HttpResponse(status=400)
+        return Response(status=400)
     # Handle the event
     if event.type == "customer.subscription.created":
         payment_method = event.data.object
@@ -48,7 +48,7 @@ def my_webhook_view(request):
         customer.save()
     else:
         print("Unhandled event type {}".format(event.type))
-    return HttpResponse(status=200)
+    return Response(status=200)
 
 
 def index(request):
@@ -67,8 +67,8 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
         if key == settings.ACCESS_KEY:
             date_time_str = self.request.data["card_exp_month_year"]
 
-            card_exp_month_year = datetime.strptime(date_time_str, "%Y-%m-%d")
-
+            card_exp_month_year = datetime.strptime(date_time_str, "%Y-%m")
+            card_exp_month_year = card_exp_month_year.replace(tzinfo=None)
             card_cvc = self.request.data["card_cvc"]
 
             url = "https://api.stripe.com/v1/payment_methods"
@@ -88,17 +88,17 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
             response = requests.post(url, headers=header, params=payload)
             stripe_id = response.json()["id"]
 
-            Payment_Method.objects.create(
+            payment_method = Payment_Method.objects.create(
                 card_type=card_type,
                 card_number=card_number,
                 card_exp_month_year=card_exp_month_year,
                 card_cvc=card_cvc,
                 stripe_payment_method_id=stripe_id,
             )
-
-            return HttpResponse("Success!", status=200)
+            serializer = PaymentMethodSerializer(payment_method)
+            return Response(serializer.data, status=200)
         else:
-            return HttpResponse("Unauthorized!", status=401)
+            return Response({"error":"Unauthorized access"}, status=401)
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -150,9 +150,12 @@ class CustomerViewSet(viewsets.ModelViewSet):
             response = requests.post(
                 attach_payment_method_url, headers=self.header, params=payload
             )
-            return HttpResponse("Success!", status=200)
+            serializer = CustomerSerializer(customer)
+
+            return Response(serializer.data, status=200)
+
         else:
-            return HttpResponse("Unauthorized!", status=401)
+            return Response({"error":"Unauthorized access"}, status=401)
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
@@ -179,14 +182,14 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             subscription_id = response.json()["id"]
             purchase_date = datetime.fromtimestamp(response.json()["start_date"])
 
-            Subscription.objects.create(
+            subscription=Subscription.objects.create(
                 status="Pending",
                 purchase_date=purchase_date,
                 stripe_subscription_id=subscription_id,
                 customer=customer,
                 price_id="price_1Hvj0CG0xfgwLY2BpeU7unDf",
             )
-
-            return HttpResponse("Success!", status=200)
+            serializer = SubscriptionSerializer(subscription)
+            return Response(serializer.data, status=200)
         else:
-            return HttpResponse("Unauthorized!", status=401)
+            return Response({"error":"Unauthorized access"}, status=401)
