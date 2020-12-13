@@ -87,8 +87,8 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
         if key == settings.ACCESS_KEY:
             date_time_str = self.request.data["card_exp_month_year"]
 
-            card_exp_month_year = datetime.strptime(date_time_str, "%Y-%m")
-            card_exp_month_year = card_exp_month_year.replace(tzinfo=None)
+            card_exp_month_year = datetime.strptime(date_time_str, "%Y-%m").date()
+            # card_exp_month_year = card_exp_month_year.replace(tzinfo=None)
             card_cvc = self.request.data["card_cvc"]
 
             url = "https://api.stripe.com/v1/payment_methods"
