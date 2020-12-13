@@ -17,6 +17,7 @@ from rest_framework.response import Response
 
 @csrf_exempt
 def my_webhook_view(request):
+    """Webhook endpoint for stripe to notify of changes"""
     payload = request.body
     event = None
 
@@ -32,9 +33,9 @@ def my_webhook_view(request):
         # Get customer in local db, change subscription status to active
         customer = Customer.objects.get(stripe_customer_id=payment_method["customer"])
         if subscription_status == True:
-            customer.status = "Active"
+            customer.status = "Successful"
         elif subscription_status == False:
-            customer.status = "Inactive"
+            customer.status = "Failed"
         customer.save()
     elif event.type == "customer.subscription.updated":
         payment_method = event.data.object
@@ -42,9 +43,9 @@ def my_webhook_view(request):
         # Get customer in local db, change subscription status to active
         customer = Customer.objects.get(stripe_customer_id=payment_method["customer"])
         if subscription_status == True:
-            customer.status = "Active"
+            customer.status = "Successful"
         elif subscription_status == False:
-            customer.status = "Inactive"
+            customer.status = "Failed"
         customer.save()
     else:
         print("Unhandled event type {}".format(event.type))
@@ -52,10 +53,28 @@ def my_webhook_view(request):
 
 
 def index(request):
+    """Welcome page"""
     return HttpResponse("Welcome to Stripe Subscription API")
 
 
 class PaymentMethodViewSet(viewsets.ModelViewSet):
+    """Viewset to handle requests for Payment Methods
+
+    Args:
+        card_type ([int]): [Type of card]
+        card_number ([int]): [Number of card]
+        card_exp_month_year ([str]): [Expiry date of card]
+        card_cvc ([int]): [CVC of card]
+        key ([str]): [Access Key]
+
+
+    Returns:
+        [id]: Payment method ID
+        [card_type]: Type of payment card
+        [card_number]: Number of payment card
+        [card_exp_month_year]: Expiry date of payment card
+        [card_cvc]: CVC of payment card
+    """
     queryset = Payment_Method.objects.all()
     serializer_class = PaymentMethodSerializer
 
@@ -64,6 +83,7 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
         card_number = self.request.data["card_number"]
         key = self.request.data["key"]
 
+        # Only allow access if access key matches
         if key == settings.ACCESS_KEY:
             date_time_str = self.request.data["card_exp_month_year"]
 
@@ -84,7 +104,7 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
                 "Authorization": "Bearer " + settings.SECRET_KEY,
                 "Content-Type": "application/x-www-form-urlencoded",
             }
-
+            # Send a POST request to create a Payment method in stripe
             response = requests.post(url, headers=header, params=payload)
             stripe_id = response.json()["id"]
 
@@ -102,6 +122,19 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
+    """Viewset to handle requests for Customers
+
+    Args:
+        customer_name ([str]): [Name of customer]
+        payment_method ([int]): [Id of payment method to attach to customer]
+        key ([str]): [Access key]
+
+
+    Returns:
+        [id]: Customer ID
+        [username]: Name of customer
+        [payment_method]: Attached payment method ID
+    """
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
     url = "https://api.stripe.com/v1/customers"
@@ -116,6 +149,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
 
         key = self.request.data["key"]
 
+        # Only allow access if access key matches
         if key == settings.ACCESS_KEY:
             payment_method = Payment_Method.objects.get(id=payment_method_id)
             # Create Customer and set default payment method
@@ -159,13 +193,25 @@ class CustomerViewSet(viewsets.ModelViewSet):
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
+    """Viewset to handle requests for Subscriptions
+
+    Args:
+        customer ([id]): [Customer ID]
+        key ([str]): [Access key]
+
+
+    Returns:
+        [id]: Subscription ID
+        [customer]: Customer attached to subscription
+    """
     queryset = Subscription.objects.all()
     serializer_class = SubscriptionSerializer
 
     def create(self, request):
         customer_id = self.request.data["customer"]
         key = self.request.data["key"]
-
+        
+        # Only allow access if access key matches
         if key == settings.ACCESS_KEY:
             customer = Customer.objects.get(id=customer_id)
             url = "https://api.stripe.com/v1/subscriptions"
