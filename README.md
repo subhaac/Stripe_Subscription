@@ -31,7 +31,7 @@ Parameters:
 
     card_type (str): input "card" here
     card_number (int): payment card number
-    card_exp_month_year (str): payment card expiry month and year in the format mm/yyyy
+    card_exp_month_year (str): payment card expiry month and year in the format yyyy/mm
     card_cvc (int): payment card cvc number
     key (str): access key 
    
